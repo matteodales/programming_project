@@ -23,6 +23,16 @@ sec = st.sidebar.radio('Sections:', ['Data cleaning', 'Academy Award fun facts',
 if sec == 'Academy Award fun facts':
        st.subheader('Academy Award fun facts')
 
+       st.write('Exploration tool for the Academy Awards history.')
+       st.write()
+       sel_year = st.selectbox('Choose a year:', [''] + list(range(1927,2021)))
+       if sel_year != '':
+              list_cat = list(oscar_df[oscar_df.year_film == sel_year-1].category.unique())
+              sel_cat = st.selectbox('Choose a category:', [''] + list_cat)
+              if sel_cat != '':
+                     st.dataframe(oscar_df[(oscar_df.year_film == sel_year-1) & (oscar_df.category == sel_cat)].drop(['year_film','category'],axis=1))
+
+
        st.write('Write the name of an actor/actress/director to see their list of nominations and wins.')
        name_string = st.text_input('Name: ')
        
@@ -43,26 +53,38 @@ if sec == 'Academy Award fun facts':
 
 
        #most wins and most nominations actors, actresses and film
-       #casella di testo che inserendo un attore/attrice/film ti dà i premi per cui è nominato e che ha vinto
        #andamento temporale di numero di nominees, numero di vincitori, percentuale di vittoria
 
-       st.write('Write the title of a film to see the list of its nominations and wins.')
+       st.write('Write the title of a film to see its list of nominations and wins.')
        title_string = st.text_input('Title: ')
 
        if title_string != '':
-              nom_name = list(oscar_df[oscar_df.film == title_string]['name'])
-              nom_cat = list(oscar_df[oscar_df.film == title_string]['category'])
-              nom_year = list(oscar_df[oscar_df.film == title_string]['year_film']+1)
-              nom_won = list(oscar_df[oscar_df.film == title_string]['winner'])
 
-              for i in range(len(nom_name)):
-                     if nom_won[i] == False:
-                            st.write(nom_year[i], ': ',nom_cat[i],' ', nom_name[i], ', Nomination.')
-                     else:
-                            st.write(nom_year[i], ': ',nom_cat[i],' ', nom_name[i], ', Won.')
+              nom_year = list(oscar_df[oscar_df.film == title_string]['year_film']+1)
               
-              st.write('Total number of nominations: ', len(nom_name))
-              st.write('Total number of wins: ', sum(nom_won))
+
+              if len(set(nom_year))>1:
+                     sel_year = st.selectbox('Choose a year:', [''] + list(set(nom_year)))
+              if len(set(nom_year))==1:
+                     sel_year = list(set(nom_year))[0]
+
+              if sel_year != '':
+                     nom_name = list(oscar_df[(oscar_df.film == title_string) & (oscar_df.year_film == sel_year-1)]['name'])
+                     nom_cat = list(oscar_df[(oscar_df.film == title_string) & (oscar_df.year_film == sel_year-1)]['category'])
+                     nom_won = list(oscar_df[(oscar_df.film == title_string) & (oscar_df.year_film == sel_year-1)]['winner'])
+
+                     for i in range(len(nom_name)):
+                            if nom_won[i] == False:
+                                   st.write(nom_cat[i],' ', nom_name[i], ', Nomination.')
+                            else:
+                                   st.write(nom_cat[i],' ', nom_name[i], ', Won.')
+              
+                     st.write('Total number of nominations: ', len(nom_name))
+                     st.write('Total number of wins: ', sum(nom_won))
+
+       st.write('This graphs present the record holders for number of Academy Awards nominations and wins.')
+
+
 
 
 
