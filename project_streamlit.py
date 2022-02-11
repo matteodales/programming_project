@@ -84,6 +84,47 @@ if sec == 'Academy Award fun facts':
 
        st.write('This graphs present the record holders for number of Academy Awards nominations and wins.')
 
+       acting_categories_m = ['ACTOR IN A SUPPORTING ROLE','ACTOR','ACTOR IN A LEADING ROLE']
+       acting_categories_f = ['ACTRESS IN A SUPPORTING ROLE', 'ACTRESS','ACTRESS IN A LEADING ROLE']
+       nominated_f = oscar_df[oscar_df.category.isin(acting_categories_f)]
+       nominated_m = oscar_df[oscar_df.category.isin(acting_categories_m)]
+
+       most_nominated_f = nominated_f.groupby('name')['winner'].agg(['sum','count']).sort_values('count', ascending = False).head(5)
+       fig1 = plt.figure(figsize=(2,2))
+       plt.bar(most_nominated_f.index, most_nominated_f['count'], label='Nominations')
+       plt.xticks(rotation=45)
+       plt.bar(most_nominated_f.index, most_nominated_f['sum'], color='red', label='Wins')
+       plt.xticks(rotation=45, fontsize=6)
+       plt.yticks(list(range(0,21,5)),fontsize=6)
+       plt.legend(loc='upper right', fontsize=6)
+       st.pyplot(fig1)
+
+       fig2 = plt.figure(figsize=(3,3))
+       most_nominated_m = nominated_m.groupby('name')['winner'].agg(['sum','count']).sort_values('count', ascending = False).head(5)
+       plt.bar(most_nominated_m.index, most_nominated_m['count'], label='Nominations')
+       plt.xticks(rotation=45)
+       plt.bar(most_nominated_m.index, most_nominated_m['sum'], color='red', label='Wins')
+       plt.xticks(rotation=45)
+       plt.yticks(list(range(0,16,5)))
+       plt.legend(loc='upper right')
+       st.pyplot(fig2)
+
+       fig3 = plt.figure(figsize=(3,3))
+       most_winning_f = nominated_f.groupby('name')['winner'].agg(['sum','count']).sort_values('sum', ascending = False).head(5)
+       plt.bar(most_winning_f.index, most_winning_f['sum'], label='Wins')
+       plt.xticks(rotation=45)
+       plt.yticks(list(range(5)))
+       plt.legend(loc='upper right')
+       st.pyplot(fig3)
+
+       fig4 = plt.figure(figsize=(3,3))
+       most_winning_m = nominated_m.groupby('name')['winner'].agg(['sum','count']).sort_values('sum', ascending = False).head(5)
+       plt.bar(most_winning_m.index, most_winning_m['sum'], label='Wins')
+       plt.xticks(rotation=45)
+       plt.yticks(list(range(5)))
+       plt.legend(loc='upper right')
+       st.pyplot(fig4)
+
 
 
 
