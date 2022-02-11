@@ -20,9 +20,39 @@ st.header('The Oscars analysis')
 
 sec = st.sidebar.radio('Sections:', ['Data cleaning', 'Academy Award fun facts', 'Other plots', 'Predictive model'])
 
+if sec == 'Academy Award fun facts':
+       st.subheader('Academy Award fun facts')
+
+       st.write('Write the name of an actor/actress to see their list of nominations and wins.')
+       name_string = st.text_input('Name: ')
+       
+       if name_string != '':
+              nom_film = list(oscar_df[oscar_df.name == name_string]['film'])
+              nom_cat = list(oscar_df[oscar_df.name == name_string]['category'])
+              nom_year = list(oscar_df[oscar_df.name == name_string]['year_film']+1)
+              nom_won = list(oscar_df[oscar_df.name == name_string]['winner'])
+
+              for i in range(len(nom_film)):
+                     if nom_won[i] == False:
+                            st.write(nom_year[i], ': ',nom_cat[i],'for ', nom_film[i], ', Nomination.')
+                     else:
+                            st.write(nom_year[i], ': ',nom_cat[i],'for ', nom_film[i], ', Won.')
+              
+              st.write('Total number of nominations: ', len(nom_film))
+              st.write('Total number of wins: ', sum(nom_won))
+
+
+       #most wins and most nominations actors, actresses and film
+       #casella di testo che inserendo un attore/attrice/film ti dà i premi per cui è nominato e che ha vinto
+       #andamento temporale di numero di nominees, numero di vincitori, percentuale di vittoria
+
+       #st.write('Write the title of a film to see the list of its nominations and wins.')
+       #title_string = st.title_input('Title: ')
+
+
+
 if sec == 'Predictive model':
        st.subheader('Predictive Model')
-       st.write('')
 
        runtime = st.checkbox('Runtime')
        popularity = st.checkbox('Popularity')
@@ -45,19 +75,19 @@ if sec == 'Predictive model':
        if prod_country: features.extend(['country_us', 'country_uk', 'country_fr', 'country_ge', 'country_it','country_ca', 'country_ja'])
        if prod_company: features.extend(['prod_warner','prod_mgm', 'prod_paramount', 'prod_20centuryfox', 'prod_universal'])
        
-       x_oscar = model_df[features]
-       y_oscar = model_df['nominated_at_least_once']
+       if features != []:
+              x_oscar = model_df[features]
+              y_oscar = model_df['nominated_at_least_once']
 
-       x_train, x_test, y_train, y_test = train_test_split(x_oscar, y_oscar, test_size=0.1, random_state=1)
+              x_train, x_test, y_train, y_test = train_test_split(x_oscar, y_oscar, test_size=0.1, random_state=1)
 
-       model = RandomForestClassifier()
-       model.fit(x_train, y_train)
-       y_pred = model.predict(x_test)
+              model = RandomForestClassifier()
+              model.fit(x_train, y_train)
+              y_pred = model.predict(x_test)
 
-       st.write('General accuracy: ', sum(y_pred == y_test) / len(y_test))
-       st.write('Accuracy on nominated films: ', sum((y_pred == y_test) & (y_test == 1))/sum(y_test==1))
-       st.write('Accuracy on not nominated films: ', sum((y_pred == y_test) & (y_test == 0))/sum(y_test==0))
-
-       st.write(y_test)
-       st.write(y_pred)
+              st.write('General accuracy: ', sum(y_pred == y_test) / len(y_test))
+              st.write('Accuracy on nominated films: ', sum((y_pred == y_test) & (y_test == 1))/sum(y_test==1))
+              st.write('Accuracy on not nominated films: ', sum((y_pred == y_test) & (y_test == 0))/sum(y_test==0))
+       else:
+              st.write('Choose the features to train the model on.')
 
