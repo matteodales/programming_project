@@ -165,7 +165,6 @@ if sec == 'Academy Award fun facts':
                      axs[2].set_title('Most winning film')
 
                      fig2.tight_layout(pad=2.0)
-
                      st.pyplot(fig2)
 
        with st.expander('Categories evolution'):
@@ -174,10 +173,25 @@ if sec == 'Academy Award fun facts':
 
               sl_year = st.slider('Choose a year: ', 1928,2020)
 
-              fig3, axs = plt.subplots(2, 1, figsize=(10,10))
+              fig3, axs = plt.subplots(3, 1, figsize=(10,10))
               axs[0].plot(num_categories)
               axs[0].plot(sl_year-1, num_categories.category.loc[sl_year-1],marker='o', markersize=10, color='red')
+              axs[0].set_title('Number of different categories')
+              st.write("In ", sl_year, " the number of different categories was ", num_categories.category.loc[sl_year-1])
 
+              num_nominees = oscar_df.groupby('year_film').count()
+              axs[1].plot(num_nominees.index,num_nominees.category)
+              axs[1].plot(sl_year-1, num_nominees.category.loc[sl_year-1],marker='o', markersize=10, color='red')
+              axs[1].set_title('Total number of nominations')
+              st.write("In ", sl_year, " the total number of nominations ", num_nominees.category.loc[sl_year-1])
+
+              win_prob = num_categories.category/num_nominees.category
+              axs[2].plot(win_prob)
+              axs[2].plot(sl_year-1, win_prob.loc[sl_year-1],marker='o', markersize=10, color='red')
+              axs[2].set_title('Winning probability for a nominated film')
+              st.write("In ", sl_year, " the winning probability for a nominated film was ", win_prob.loc[sl_year-1])
+              
+              fig3.tight_layout(pad=2.0)
               st.pyplot(fig3)
              
 
