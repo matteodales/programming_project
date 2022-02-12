@@ -97,42 +97,55 @@ if sec == 'Academy Award fun facts':
               nominated_f = oscar_df[(oscar_df.category.isin(acting_categories_f)) & (oscar_df.year_film >= min_year-1) & (oscar_df.year_film <= max_year-1)]
               nominated_m = oscar_df[(oscar_df.category.isin(acting_categories_m)) & (oscar_df.year_film >= min_year-1) & (oscar_df.year_film <= max_year-1)]
 
-              most_nominated_f = nominated_f.groupby('name')['winner'].agg(['sum','count']).sort_values('count', ascending = False).head(5)
-              fig1 = plt.figure(figsize=(2,2))
-              plt.bar(most_nominated_f.index, most_nominated_f['count'], label='Nominations')
-              plt.xticks(rotation=45)
-              plt.bar(most_nominated_f.index, most_nominated_f['sum'], color='red', label='Wins')
-              plt.xticks(rotation=45, fontsize=6)
-              plt.yticks(list(range(0,21,5)),fontsize=6)
-              plt.legend(loc='upper right', fontsize=6)
-              st.pyplot(fig1)
+              nom_check = st.checkbox('Most nominations')
+              win_check = st.checkbox('Most wins')
 
-              fig2 = plt.figure(figsize=(2,2))
-              most_nominated_m = nominated_m.groupby('name')['winner'].agg(['sum','count']).sort_values('count', ascending = False).head(5)
-              plt.bar(most_nominated_m.index, most_nominated_m['count'], label='Nominations')
-              plt.xticks(rotation=45)
-              plt.bar(most_nominated_m.index, most_nominated_m['sum'], color='red', label='Wins')
-              plt.xticks(rotation=45)
-              plt.yticks(list(range(0,16,5)))
-              plt.legend(loc='upper right')
-              st.pyplot(fig2)
+              if nom_check:
+                     fig1, axs = plt.subplots(3, 1, figsize=(10,10))
 
-              fig3 = plt.figure(figsize=(2,2))
-              most_winning_f = nominated_f.groupby('name')['winner'].agg(['sum','count']).sort_values('sum', ascending = False).head(5)
-              plt.bar(most_winning_f.index, most_winning_f['sum'], label='Wins', color='red')
-              plt.xticks(rotation=45)
-              plt.yticks(list(range(5)))
-              plt.legend(loc='upper right')
-              st.pyplot(fig3)
+                     most_nominated_f = nominated_f.groupby('name')['winner'].agg(['sum','count']).sort_values('count', ascending = False).head(5)
+                     p1 = axs[0].bar(most_nominated_f.index, most_nominated_f['count'], label='Nominations')
+                     axs[0].bar(most_nominated_f.index, most_nominated_f['sum'], color='red', label='Wins')
+                     axs[0].bar_label(p1, label_type = 'center')
+                     axs[0].tick_params(labelsize = 9)
+                     axs[0].legend(loc='upper right', fontsize=9)
+                     axs[0].set_title('Most nominated female actress')
 
-              fig4 = plt.figure(figsize=(2,2))
-              most_winning_m = nominated_m.groupby('name')['winner'].agg(['sum','count']).sort_values('sum', ascending = False).head(5)
-              plt.bar(most_winning_m.index, most_winning_m['sum'], label='Wins', color='red')
-              plt.xticks(rotation=45)
-              plt.yticks(list(range(5)))
-              plt.legend(loc='upper right')
-              st.pyplot(fig4)
+                     most_nominated_m = nominated_m.groupby('name')['winner'].agg(['sum','count']).sort_values('count', ascending = False).head(5)
+                     p1 = axs[1].bar(most_nominated_m.index, most_nominated_m['count'], label='Nominations')
+                     axs[1].bar(most_nominated_m.index, most_nominated_m['sum'], color='red', label='Wins')
+                     axs[1].bar_label(p1, label_type = 'center')
+                     axs[1].tick_params(labelsize = 9)
+                     axs[1].legend(loc='upper right', fontsize=9)
+                     axs[1].set_title('Most nominated male actor')
 
+                     fig1.tight_layout(pad=2.0)
+
+                     #most nominated film
+                     st.pyplot(fig1)
+              
+              if win_check:
+                     fig2, axs = plt.subplots(3, 1, figsize=(10,10))
+
+                     most_winning_f = nominated_f.groupby('name')['winner'].agg(['sum','count']).sort_values('sum', ascending = False).head(5)
+                     p1 = axs[0].bar(most_winning_f.index, most_winning_f['sum'], color='red', label='Wins')
+                     axs[0].bar_label(p1, label_type = 'center')
+                     axs[0].tick_params(labelsize = 9)
+                     axs[0].legend(loc='upper right', fontsize=9)
+                     axs[0].set_title('Most winning female actress')
+
+                     most_winning_m = nominated_m.groupby('name')['winner'].agg(['sum','count']).sort_values('sum', ascending = False).head(5)
+                     p1 = axs[1].bar(most_winning_m.index, most_winning_m['sum'], color='red', label='Wins')
+                     axs[1].bar_label(p1, label_type = 'center')
+                     axs[1].tick_params(labelsize = 9)
+                     axs[1].legend(loc='upper right', fontsize=9)
+                     axs[1].set_title('Most winning male actor')
+
+                     #most winning film
+
+                     fig2.tight_layout(pad=2.0)
+
+                     st.pyplot(fig2)
 
 
 
