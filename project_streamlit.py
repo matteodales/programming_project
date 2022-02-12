@@ -100,6 +100,16 @@ if sec == 'Academy Award fun facts':
               nom_check = st.checkbox('Most nominations')
               win_check = st.checkbox('Most wins')
 
+              film_df = oscar_df
+              film_df.drop(['category','name'],axis=1)
+              film_df['nominations'] = 1
+              film_df['winner'] = film_df['winner'].apply(lambda x:int(x))
+              film_df['identifier'] = [str(film_df.year_film.iloc[i]) + film_df.film.iloc[i] for i in range(len(film_df.film))]
+              film_df = film_df.groupby('identifier').sum()
+              film_df['film'] = [film_df.index[i][4:] for i in range(len(film_df.year_film))]
+              film_df['year_film'] = [int(film_df.index[i][0:4]) for i in range(len(film_df.year_film))]
+              film_df = film_df.set_index(pd.Series(range(len(film_df.film))))
+
               if nom_check:
                      fig1, axs = plt.subplots(3, 1, figsize=(10,10))
 
@@ -119,9 +129,15 @@ if sec == 'Academy Award fun facts':
                      axs[1].legend(loc='upper right', fontsize=9)
                      axs[1].set_title('Most nominated male actor')
 
-                     fig1.tight_layout(pad=2.0)
+                     most_nominated_film = film_df.sort_values('nominations',ascending=False).head(5)
+                     p1 = axs[2].bar(most_nominated_film.film, most_nominated_film.nominations, label='Nominations')
+                     axs[2].bar(most_nominated_film.film, most_nominated_film.winner, color='red', label='Wins')
+                     axs[2].bar_label(p1, label_type = 'center')
+                     axs[2].tick_params(labelsize = 9)
+                     axs[2].legend(loc='upper right', fontsize=9)
+                     axs[2].set_title('Most nominated film')
 
-                     #most nominated film
+                     fig1.tight_layout(pad=2.0)
                      st.pyplot(fig1)
               
               if win_check:
@@ -141,11 +157,19 @@ if sec == 'Academy Award fun facts':
                      axs[1].legend(loc='upper right', fontsize=9)
                      axs[1].set_title('Most winning male actor')
 
-                     #most winning film
+                     most_nominated_film = film_df.sort_values('winner',ascending=False).head(5)
+                     p1 = axs[2].bar(most_nominated_film.film, most_nominated_film.winner, color='red', label='Wins')
+                     axs[2].bar_label(p1, label_type = 'center')
+                     axs[2].tick_params(labelsize = 9)
+                     axs[2].legend(loc='upper right', fontsize=9)
+                     axs[2].set_title('Most winning film')
 
                      fig2.tight_layout(pad=2.0)
 
                      st.pyplot(fig2)
+
+      # with st.expander('Categories evolution'):
+
 
 
 
