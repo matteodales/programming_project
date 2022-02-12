@@ -270,6 +270,35 @@ if sec == 'Other plots':
                      st.write("Correlation with winning:")
                      f_table_win = pd.concat([pd.Series(features), pd.Series(list(corr_df[(corr_df['feat1']=='won_at_least_once') & (corr_df['feat2'].apply(lambda x: x in features))].value))], axis=1, keys=['Feature','Correlation'])
                      st.dataframe(f_table_win)
+
+       with st.expander('release date distribution'):
+              st.write('The general consensus in the film industry is that the later in the year a film is published, the higher chances of awards it has: this has been\
+                     attributed to the fact that awards season falls in the beginning of the successive year, and movies that have just been released leave a more vivid mark\
+                     in the memories of awards voters.')
+
+              fig, axs = plt.subplots(1, 3, figsize=(8,4))
+              axs[0].hist(model_df[(model_df.nominated_at_least_once == 0) & (model_df.day>1)]['day'],50)
+              axs[0].title.set_text('Not nominated')
+              axs[1].hist(model_df[(model_df.nominated_at_least_once == 1) & (model_df.day>1)]['day'],50)
+              axs[1].set_title('Nominated')
+              axs[2].hist(model_df[(model_df.won_at_least_once == 1) & (model_df.day>1)]['day'],50)
+              axs[2].set_title('Won')
+
+              fig.tight_layout(pad=1.0)
+              fig.suptitle('day', fontsize=15, ha='center', y = 1.05)
+              st.pyplot(fig)
+
+              st.write('Average ', 'day' ,'for not nominated films is: ', model_df[(model_df.nominated_at_least_once == 0) & (model_df.day>1)]['day'].mean())
+              st.write('Average ', 'day' ,'for nominated films is: ', model_df[(model_df.nominated_at_least_once == 1) & (model_df.day>1)]['day'].mean())
+              st.write('Average ', 'day' ,'for winning films is: ', model_df[(model_df.won_at_least_once == 1) & (model_df.day>1)]['day'].mean())
+
+              day_rate = [len(model_df[(model_df.nominated_at_least_once == 1) & (model_df.day==x)]['day'])/len(model_df[model_df.day==x]['day']) for x in range(2,365)]
+              fig, ax = plt.subplots(figsize=(8,2))
+              ax.contourf([day_rate,day_rate],cmap='jet',vmin=0, vmax=max(day_rate))
+              st.pyplot(fig)
+
+              st.write('The heatmap shows how the rate of nominated films released in a day varies\
+                     throughout the year. The data seems to prove the rumors right! ')
               
               
 
