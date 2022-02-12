@@ -23,107 +23,115 @@ sec = st.sidebar.radio('Sections:', ['Data cleaning', 'Academy Award fun facts',
 if sec == 'Academy Award fun facts':
        st.subheader('Academy Award fun facts')
 
-       st.write('Exploration tool for the Academy Awards history.')
-       st.write()
-       sel_year = st.selectbox('Choose a year:', [''] + list(range(1927,2021)))
-       if sel_year != '':
-              list_cat = list(oscar_df[oscar_df.year_film == sel_year-1].category.unique())
-              sel_cat = st.selectbox('Choose a category:', [''] + list_cat)
-              if sel_cat != '':
-                     st.dataframe(oscar_df[(oscar_df.year_film == sel_year-1) & (oscar_df.category == sel_cat)].drop(['year_film','category'],axis=1))
-
-
-       st.write('Write the name of an actor/actress/director to see their list of nominations and wins.')
-       name_string = st.text_input('Name: ')
-       
-       if name_string != '':
-              nom_film = list(oscar_df[oscar_df.name == name_string]['film'])
-              nom_cat = list(oscar_df[oscar_df.name == name_string]['category'])
-              nom_year = list(oscar_df[oscar_df.name == name_string]['year_film']+1)
-              nom_won = list(oscar_df[oscar_df.name == name_string]['winner'])
-
-              for i in range(len(nom_film)):
-                     if nom_won[i] == False:
-                            st.write(nom_year[i], ': ',nom_cat[i],'for ', nom_film[i], ', Nomination.')
-                     else:
-                            st.write(nom_year[i], ': ',nom_cat[i],'for ', nom_film[i], ', Won.')
-              
-              st.write('Total number of nominations: ', len(nom_film))
-              st.write('Total number of wins: ', sum(nom_won))
-
-
-       #most wins and most nominations actors, actresses and film
-       #andamento temporale di numero di nominees, numero di vincitori, percentuale di vittoria
-
-       st.write('Write the title of a film to see its list of nominations and wins.')
-       title_string = st.text_input('Title: ')
-
-       if title_string != '':
-
-              nom_year = list(oscar_df[oscar_df.film == title_string]['year_film']+1)
-              
-
-              if len(set(nom_year))>1:
-                     sel_year = st.selectbox('Choose a year:', [''] + list(set(nom_year)))
-              if len(set(nom_year))==1:
-                     sel_year = list(set(nom_year))[0]
-
+       with st.expander('Exploration tool'):
+              st.write('Exploration tool for the Academy Awards history.')
+              st.write()
+              sel_year = st.selectbox('Choose a year:', [''] + list(range(1927,2021)))
               if sel_year != '':
-                     nom_name = list(oscar_df[(oscar_df.film == title_string) & (oscar_df.year_film == sel_year-1)]['name'])
-                     nom_cat = list(oscar_df[(oscar_df.film == title_string) & (oscar_df.year_film == sel_year-1)]['category'])
-                     nom_won = list(oscar_df[(oscar_df.film == title_string) & (oscar_df.year_film == sel_year-1)]['winner'])
+                     list_cat = list(oscar_df[oscar_df.year_film == sel_year-1].category.unique())
+                     sel_cat = st.selectbox('Choose a category:', [''] + list_cat)
+                     if sel_cat != '':
+                            st.dataframe(oscar_df[(oscar_df.year_film == sel_year-1) & (oscar_df.category == sel_cat)].drop(['year_film','category'],axis=1))
 
-                     for i in range(len(nom_name)):
-                            if nom_won[i] == False:
-                                   st.write(nom_cat[i],' ', nom_name[i], ', Nomination.')
-                            else:
-                                   st.write(nom_cat[i],' ', nom_name[i], ', Won.')
+              st.write('Write the name of an actor/actress/director to see their list of nominations and wins.')
+              name_string = st.text_input('Name: ')
               
-                     st.write('Total number of nominations: ', len(nom_name))
+              if name_string != '':
+                     nom_film = list(oscar_df[oscar_df.name == name_string]['film'])
+                     nom_cat = list(oscar_df[oscar_df.name == name_string]['category'])
+                     nom_year = list(oscar_df[oscar_df.name == name_string]['year_film']+1)
+                     nom_won = list(oscar_df[oscar_df.name == name_string]['winner'])
+
+                     for i in range(len(nom_film)):
+                            if nom_won[i] == False:
+                                   st.write(nom_year[i], ': ',nom_cat[i],'for ', nom_film[i], ', Nomination.')
+                            else:
+                                   st.write(nom_year[i], ': ',nom_cat[i],'for ', nom_film[i], ', Won.')
+                     
+                     st.write('Total number of nominations: ', len(nom_film))
                      st.write('Total number of wins: ', sum(nom_won))
 
-       st.write('This graphs present the record holders for number of Academy Awards nominations and wins.')
 
-       acting_categories_m = ['ACTOR IN A SUPPORTING ROLE','ACTOR','ACTOR IN A LEADING ROLE']
-       acting_categories_f = ['ACTRESS IN A SUPPORTING ROLE', 'ACTRESS','ACTRESS IN A LEADING ROLE']
-       nominated_f = oscar_df[oscar_df.category.isin(acting_categories_f)]
-       nominated_m = oscar_df[oscar_df.category.isin(acting_categories_m)]
+              #most wins and most nominations actors, actresses and film
+              #andamento temporale di numero di nominees, numero di vincitori, percentuale di vittoria
 
-       most_nominated_f = nominated_f.groupby('name')['winner'].agg(['sum','count']).sort_values('count', ascending = False).head(5)
-       fig1 = plt.figure(figsize=(2,2))
-       plt.bar(most_nominated_f.index, most_nominated_f['count'], label='Nominations')
-       plt.xticks(rotation=45)
-       plt.bar(most_nominated_f.index, most_nominated_f['sum'], color='red', label='Wins')
-       plt.xticks(rotation=45, fontsize=6)
-       plt.yticks(list(range(0,21,5)),fontsize=6)
-       plt.legend(loc='upper right', fontsize=6)
-       st.pyplot(fig1)
+              st.write('Write the title of a film to see its list of nominations and wins.')
+              title_string = st.text_input('Title: ')
 
-       fig2 = plt.figure(figsize=(3,3))
-       most_nominated_m = nominated_m.groupby('name')['winner'].agg(['sum','count']).sort_values('count', ascending = False).head(5)
-       plt.bar(most_nominated_m.index, most_nominated_m['count'], label='Nominations')
-       plt.xticks(rotation=45)
-       plt.bar(most_nominated_m.index, most_nominated_m['sum'], color='red', label='Wins')
-       plt.xticks(rotation=45)
-       plt.yticks(list(range(0,16,5)))
-       plt.legend(loc='upper right')
-       st.pyplot(fig2)
+              if title_string != '':
 
-       fig3 = plt.figure(figsize=(3,3))
-       most_winning_f = nominated_f.groupby('name')['winner'].agg(['sum','count']).sort_values('sum', ascending = False).head(5)
-       plt.bar(most_winning_f.index, most_winning_f['sum'], label='Wins')
-       plt.xticks(rotation=45)
-       plt.yticks(list(range(5)))
-       plt.legend(loc='upper right')
-       st.pyplot(fig3)
+                     nom_year = list(oscar_df[oscar_df.film == title_string]['year_film']+1)
+                     
 
-       fig4 = plt.figure(figsize=(3,3))
-       most_winning_m = nominated_m.groupby('name')['winner'].agg(['sum','count']).sort_values('sum', ascending = False).head(5)
-       plt.bar(most_winning_m.index, most_winning_m['sum'], label='Wins')
-       plt.xticks(rotation=45)
-       plt.yticks(list(range(5)))
-       plt.legend(loc='upper right')
-       st.pyplot(fig4)
+                     if len(set(nom_year))>1:
+                            sel_year = st.selectbox('Choose a year:', [''] + list(set(nom_year)))
+                     if len(set(nom_year))==1:
+                            sel_year = list(set(nom_year))[0]
+
+                     if sel_year != '':
+                            nom_name = list(oscar_df[(oscar_df.film == title_string) & (oscar_df.year_film == sel_year-1)]['name'])
+                            nom_cat = list(oscar_df[(oscar_df.film == title_string) & (oscar_df.year_film == sel_year-1)]['category'])
+                            nom_won = list(oscar_df[(oscar_df.film == title_string) & (oscar_df.year_film == sel_year-1)]['winner'])
+
+                            for i in range(len(nom_name)):
+                                   if nom_won[i] == False:
+                                          st.write(nom_cat[i],' ', nom_name[i], ', Nomination.')
+                                   else:
+                                          st.write(nom_cat[i],' ', nom_name[i], ', Won.')
+                     
+                            st.write('Total number of nominations: ', len(nom_name))
+                            st.write('Total number of wins: ', sum(nom_won))
+
+
+       with st.expander('Nominations and wins record holders'):
+
+              st.write('This graphs present the record holders for number of Academy Awards nominations and wins.')
+
+              values = st.slider('Select a range of years',1927, 2020 ,(1927,2020))
+
+              min_year = values[0]
+              max_year = values[1]
+
+              acting_categories_m = ['ACTOR IN A SUPPORTING ROLE','ACTOR','ACTOR IN A LEADING ROLE']
+              acting_categories_f = ['ACTRESS IN A SUPPORTING ROLE', 'ACTRESS','ACTRESS IN A LEADING ROLE']
+              nominated_f = oscar_df[(oscar_df.category.isin(acting_categories_f)) & (oscar_df.year_film >= min_year-1) & (oscar_df.year_film <= max_year-1)]
+              nominated_m = oscar_df[(oscar_df.category.isin(acting_categories_m)) & (oscar_df.year_film >= min_year-1) & (oscar_df.year_film <= max_year-1)]
+
+              most_nominated_f = nominated_f.groupby('name')['winner'].agg(['sum','count']).sort_values('count', ascending = False).head(5)
+              fig1 = plt.figure(figsize=(2,2))
+              plt.bar(most_nominated_f.index, most_nominated_f['count'], label='Nominations')
+              plt.xticks(rotation=45)
+              plt.bar(most_nominated_f.index, most_nominated_f['sum'], color='red', label='Wins')
+              plt.xticks(rotation=45, fontsize=6)
+              plt.yticks(list(range(0,21,5)),fontsize=6)
+              plt.legend(loc='upper right', fontsize=6)
+              st.pyplot(fig1)
+
+              fig2 = plt.figure(figsize=(2,2))
+              most_nominated_m = nominated_m.groupby('name')['winner'].agg(['sum','count']).sort_values('count', ascending = False).head(5)
+              plt.bar(most_nominated_m.index, most_nominated_m['count'], label='Nominations')
+              plt.xticks(rotation=45)
+              plt.bar(most_nominated_m.index, most_nominated_m['sum'], color='red', label='Wins')
+              plt.xticks(rotation=45)
+              plt.yticks(list(range(0,16,5)))
+              plt.legend(loc='upper right')
+              st.pyplot(fig2)
+
+              fig3 = plt.figure(figsize=(2,2))
+              most_winning_f = nominated_f.groupby('name')['winner'].agg(['sum','count']).sort_values('sum', ascending = False).head(5)
+              plt.bar(most_winning_f.index, most_winning_f['sum'], label='Wins', color='red')
+              plt.xticks(rotation=45)
+              plt.yticks(list(range(5)))
+              plt.legend(loc='upper right')
+              st.pyplot(fig3)
+
+              fig4 = plt.figure(figsize=(2,2))
+              most_winning_m = nominated_m.groupby('name')['winner'].agg(['sum','count']).sort_values('sum', ascending = False).head(5)
+              plt.bar(most_winning_m.index, most_winning_m['sum'], label='Wins', color='red')
+              plt.xticks(rotation=45)
+              plt.yticks(list(range(5)))
+              plt.legend(loc='upper right')
+              st.pyplot(fig4)
 
 
 
