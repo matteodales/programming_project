@@ -17,6 +17,9 @@ model_df = pd.read_csv('model_df.csv')
 oscar_df = oscar_df.drop(['year_ceremony','ceremony'], axis=1)
 oscar_df = oscar_df.dropna(subset=['film'])
 
+corr_df = model_df.corr().stack().rename_axis(('feat1', 'feat2')).reset_index(name='value')
+corr_df = corr_df[corr_df.feat1 != corr_df.feat2]
+
 st.header('The Oscars analysis')
 
 sec = st.sidebar.radio('Sections:', ['Data cleaning', 'Academy Award fun facts', 'Other plots', 'Predictive model'])
@@ -200,6 +203,7 @@ if sec == 'Other plots':
        nom_df = model_df[model_df.nominated_at_least_once == 1]
        win_df = model_df[model_df.won_at_least_once == 1]
 
+       st.write("Make a comparison between these features on not nominated, nominated and winning films.")
        #budget, revenue, runtime, popularity, number of votes, vote average, 
        confront = st.multiselect('Pick the features you want to compare', ['Budget', 'Revenue', 'Popularity', 'Runtime', 'Vote average', 'Vote count'])
        confront = [item.lower() for item in confront]
@@ -228,8 +232,46 @@ if sec == 'Other plots':
                      st.write('Average ', feat ,'for nominated films is: ', nom_df[nom_df[feat] > 0][feat].mean())
                      st.write('Average ', feat ,'for winning films is: ', win_df[win_df[feat] > 0][feat].mean())
                      
-       
+       st.write("Find out the features mostly correlated with being nominated and winning an Academy Award.")
 
+       select = st.selectbox('Select a feature', ['', 'Genre', 'Original Language','Producting Country', 'Producting Company','All Features'])
+       
+       if select != '':
+              
+              if select == 'Genre':
+                     features = ['genre Animation', 'genre Comedy','genre Family', 'genre Adventure', 'genre Fantasy', 'genre Romance','genre Drama',\
+                             'genre Action', 'genre Crime', 'genre Thriller','genre Horror', 'genre History', 'genre Science Fiction','genre Mystery', \
+                                    'genre War', 'genre Foreign', 'genre Music', 'genre Documentary', 'genre Western', 'genre TV Movie']
+              if select == 'Original Language':
+                     features = ['language_en', 'language_fr', 'language_it','language_ja', 'language_de', 'language_es', 'language_ru']
+              if select == 'Producting Country': 
+                     features = ['country_us', 'country_uk', 'country_fr', 'country_ge', 'country_it','country_ca', 'country_ja']
+              if select == 'Producting Company':
+                     features = ['prod_warner','prod_mgm', 'prod_paramount', 'prod_20centuryfox', 'prod_universal']
+              if select == 'All Features':
+                     features = ['budget', 'popularity', 'revenue', 'runtime', 'vote_average',\
+                                   'vote_count', 'genre Animation', 'genre Comedy',\
+                                   'genre Family', 'genre Adventure', 'genre Fantasy', 'genre Romance',\
+                                   'genre Drama', 'genre Action', 'genre Crime', 'genre Thriller',\
+                                   'genre Horror', 'genre History', 'genre Science Fiction',\
+                                   'genre Mystery', 'genre War', 'genre Foreign', 'genre Music',\
+                                   'genre Documentary', 'genre Western', 'genre TV Movie', 'prod_warner',\
+                                   'prod_mgm', 'prod_paramount', 'prod_20centuryfox', 'prod_universal',\
+                                   'country_us', 'country_uk', 'country_fr', 'country_ge', 'country_it',\
+                                   'country_ca', 'country_ja', 'language_en', 'language_fr', 'language_it',\
+                                   'language_ja', 'language_de', 'language_es', 'language_ru']
+
+              col1, col2 = st.columns(2)
+              with col1:
+                     st.write("Correlation with being nominated:")
+                     f_table_nom = pd.concat([pd.Series(features), pd.Series(list(corr_df[(corr_df['feat1']=='nominated_at_least_once') & (corr_df['feat2'].apply(lambda x: x in features))].value))], axis=1, keys=['Feature','Correlation'])
+                     st.dataframe(f_table_nom)
+              with col2:
+                     st.write("Correlation with winning:")
+                     f_table_win = pd.concat([pd.Series(features), pd.Series(list(corr_df[(corr_df['feat1']=='won_at_least_once') & (corr_df['feat2'].apply(lambda x: x in features))].value))], axis=1, keys=['Feature','Correlation'])
+                     st.dataframe(f_table_win)
+              
+              
 
 if sec == 'Predictive model':
        st.subheader('Predictive Model')
