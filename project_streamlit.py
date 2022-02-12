@@ -1,3 +1,4 @@
+from ctypes import alignment
 from tkinter import N
 import pandas as pd
 import numpy as np
@@ -81,7 +82,6 @@ if sec == 'Academy Award fun facts':
                      
                             st.write('Total number of nominations: ', len(nom_name))
                             st.write('Total number of wins: ', sum(nom_won))
-
 
        with st.expander('Nominations and wins record holders'):
 
@@ -193,10 +193,42 @@ if sec == 'Academy Award fun facts':
               
               fig3.tight_layout(pad=2.0)
               st.pyplot(fig3)
-             
 
+if sec == 'Other plots':
 
+       not_df = model_df[model_df.nominated_at_least_once == 0]
+       nom_df = model_df[model_df.nominated_at_least_once == 1]
+       win_df = model_df[model_df.won_at_least_once == 1]
 
+       #budget, revenue, runtime, popularity, number of votes, vote average, 
+       confront = st.multiselect('Pick the features you want to compare', ['Budget', 'Revenue', 'Popularity', 'Runtime', 'Vote average', 'Vote count'])
+       confront = [item.lower() for item in confront]
+       if 'vote average' in confront: 
+              confront.append('vote_average')
+              confront.remove('vote average')
+       if 'vote count' in confront: 
+              confront.append('vote_count')
+              confront.remove('vote count')
+
+       for feat in ['budget', 'revenue', 'popularity', 'runtime', 'vote_average', 'vote_count']:
+              if feat in confront:
+                     fig, axs = plt.subplots(1, 3, figsize=(8,4))
+                     axs[0].hist(not_df[not_df[feat] > 0][feat],50)
+                     axs[0].title.set_text('Not nominated')
+                     axs[1].hist(nom_df[nom_df[feat] > 0][feat],50)
+                     axs[1].set_title('Nominated')
+                     axs[2].hist(win_df[win_df[feat] > 0][feat],50)
+                     axs[2].set_title('Won')
+
+                     fig.tight_layout(pad=1.0)
+                     fig.suptitle(feat, fontsize=15, ha='center', y = 1.05)
+                     st.pyplot(fig)
+
+                     st.write('Average ', feat ,'for not nominated films is: ', not_df[not_df[feat] > 0][feat].mean())
+                     st.write('Average ', feat ,'for nominated films is: ', nom_df[nom_df[feat] > 0][feat].mean())
+                     st.write('Average ', feat ,'for winning films is: ', win_df[win_df[feat] > 0][feat].mean())
+                     
+       
 
 
 if sec == 'Predictive model':
