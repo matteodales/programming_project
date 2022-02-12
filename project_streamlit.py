@@ -26,7 +26,7 @@ if sec == 'Academy Award fun facts':
        with st.expander('Exploration tool'):
               st.write('Exploration tool for the Academy Awards history.')
               st.write()
-              sel_year = st.selectbox('Choose a year:', [''] + list(range(1927,2021)))
+              sel_year = st.selectbox('Choose a year:', [''] + list(range(1928,2021)))
               if sel_year != '':
                      list_cat = list(oscar_df[oscar_df.year_film == sel_year-1].category.unique())
                      sel_cat = st.selectbox('Choose a category:', [''] + list_cat)
@@ -168,7 +168,18 @@ if sec == 'Academy Award fun facts':
 
                      st.pyplot(fig2)
 
-      # with st.expander('Categories evolution'):
+       with st.expander('Categories evolution'):
+              num_categories = oscar_df.groupby(['year_film'])
+              num_categories = num_categories.agg({"category": "nunique"})
+
+              sl_year = st.slider('Choose a year: ', 1928,2020)
+
+              fig3, axs = plt.subplots(2, 1, figsize=(10,10))
+              axs[0].plot(num_categories)
+              axs[0].plot(sl_year-1, num_categories.category.loc[sl_year-1],marker='o', markersize=10, color='red')
+
+              st.pyplot(fig3)
+             
 
 
 
