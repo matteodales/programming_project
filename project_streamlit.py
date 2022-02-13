@@ -22,10 +22,16 @@ corr_df = corr_df[corr_df.feat1 != corr_df.feat2]
 
 st.header('The Oscars analysis')
 
-sec = st.sidebar.radio('Sections:', ['Data cleaning', 'Academy Award fun facts', 'Other plots', 'Predictive model'])
+sec = st.sidebar.radio('Sections:', ['Data cleaning', 'Academy Award exploration', 'Movie features analysis', 'Predictive model'])
 
-if sec == 'Academy Award fun facts':
-       st.subheader('Academy Award fun facts')
+if sec == 'Data cleaning':
+       st.write('Lo faccio domani')
+
+       #mettere spiegazione piuttosto discorsiva dei passaggi fatti, magari divisa in pulizia oscar, metadata e unione
+       #possibilità di scaricare i raw data e il dataset finale
+
+if sec == 'Academy Award exploration':
+       st.subheader('Academy Award exploration')
 
        with st.expander('Exploration tool'):
               st.write('Exploration tool for the Academy Awards history.')
@@ -171,6 +177,9 @@ if sec == 'Academy Award fun facts':
                      st.pyplot(fig2)
 
        with st.expander('Categories evolution'):
+
+              st.write('Explanation......')
+
               num_categories = oscar_df.groupby(['year_film'])
               num_categories = num_categories.agg({"category": "nunique"})
 
@@ -197,16 +206,19 @@ if sec == 'Academy Award fun facts':
               fig3.tight_layout(pad=2.0)
               st.pyplot(fig3)
 
-if sec == 'Other plots':
+if sec == 'Movie features analysis':
+
+       st.subheader('Movie features analysis')
 
        not_df = model_df[model_df.nominated_at_least_once == 0]
        nom_df = model_df[model_df.nominated_at_least_once == 1]
        win_df = model_df[model_df.won_at_least_once == 1]
 
        st.write("Make a comparison between these features on not nominated, nominated and winning films.")
-       #budget, revenue, runtime, popularity, number of votes, vote average, 
+
        confront = st.multiselect('Pick the features you want to compare', ['Budget', 'Revenue', 'Popularity', 'Runtime', 'Vote average', 'Vote count'])
        confront = [item.lower() for item in confront]
+
        if 'vote average' in confront: 
               confront.append('vote_average')
               confront.remove('vote average')
@@ -271,7 +283,7 @@ if sec == 'Other plots':
                      f_table_win = pd.concat([pd.Series(features), pd.Series(list(corr_df[(corr_df['feat1']=='won_at_least_once') & (corr_df['feat2'].apply(lambda x: x in features))].value))], axis=1, keys=['Feature','Correlation'])
                      st.dataframe(f_table_win)
 
-       with st.expander('release date distribution'):
+       with st.expander('Release date distribution'):
               st.write('The general consensus in the film industry is that the later in the year a film is published, the higher chances of awards it has: this has been\
                      attributed to the fact that awards season falls in the beginning of the successive year, and movies that have just been released leave a more vivid mark\
                      in the memories of awards voters.')
@@ -300,10 +312,10 @@ if sec == 'Other plots':
               st.write('The heatmap shows how the rate of nominated films released in a day varies\
                      throughout the year. The data seems to prove the rumors right! ')
               
-              
-
 if sec == 'Predictive model':
        st.subheader('Predictive Model')
+
+       st.write('Spiegazione....')
 
        runtime = st.checkbox('Runtime')
        popularity = st.checkbox('Popularity')
@@ -330,7 +342,7 @@ if sec == 'Predictive model':
               x_oscar = model_df[features]
               y_oscar = model_df['nominated_at_least_once']
 
-              x_train, x_test, y_train, y_test = train_test_split(x_oscar, y_oscar, test_size=0.1, random_state=1)
+              x_train, x_test, y_train, y_test = train_test_split(x_oscar, y_oscar, test_size=0.1, random_state=10)
 
               model = RandomForestClassifier()
               model.fit(x_train, y_train)
@@ -339,6 +351,11 @@ if sec == 'Predictive model':
               st.write('General accuracy: ', sum(y_pred == y_test) / len(y_test))
               st.write('Accuracy on nominated films: ', sum((y_pred == y_test) & (y_test == 1))/sum(y_test==1))
               st.write('Accuracy on not nominated films: ', sum((y_pred == y_test) & (y_test == 0))/sum(y_test==0))
+
+              #mettere barra di caricamento?
+              #grafici che fanno vedere che ne indovina tot, quanti dice che sono nominati...
+              #
+
        else:
               st.write('Choose the features to train the model on.')
 
