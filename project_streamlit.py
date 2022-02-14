@@ -8,6 +8,8 @@ import streamlit as st
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
+import sklearn.metrics as skm
+import time
 
 
 oscar_df = pd.read_csv('the_oscar_award.csv')
@@ -20,18 +22,18 @@ oscar_df = oscar_df.dropna(subset=['film'])
 corr_df = model_df.corr().stack().rename_axis(('feat1', 'feat2')).reset_index(name='value')
 corr_df = corr_df[corr_df.feat1 != corr_df.feat2]
 
-st.header('The Oscars analysis')
+st.title('The Oscars analysis')
 
 sec = st.sidebar.radio('Sections:', ['Data cleaning', 'Academy Award exploration', 'Movie features analysis', 'Predictive model'])
 
 if sec == 'Data cleaning':
-       st.write('Lo faccio domani')
+       st.header('Data cleaning')
 
        #mettere spiegazione piuttosto discorsiva dei passaggi fatti, magari divisa in pulizia oscar, metadata e unione
        #possibilità di scaricare i raw data e il dataset finale
 
 if sec == 'Academy Award exploration':
-       st.subheader('Academy Award exploration')
+       st.header('Academy Award exploration')
 
        with st.expander('Exploration tool'):
               st.write('Exploration tool for the Academy Awards history.')
@@ -208,7 +210,7 @@ if sec == 'Academy Award exploration':
 
 if sec == 'Movie features analysis':
 
-       st.subheader('Movie features analysis')
+       st.header('Movie features analysis')
 
        not_df = model_df[model_df.nominated_at_least_once == 0]
        nom_df = model_df[model_df.nominated_at_least_once == 1]
@@ -313,7 +315,7 @@ if sec == 'Movie features analysis':
                      throughout the year. The data seems to prove the rumors right! ')
               
 if sec == 'Predictive model':
-       st.subheader('Predictive Model')
+       st.header('Predictive Model')
 
        st.write('Spiegazione....')
 
@@ -344,17 +346,27 @@ if sec == 'Predictive model':
 
               x_train, x_test, y_train, y_test = train_test_split(x_oscar, y_oscar, test_size=0.1, random_state=10)
 
-              model = RandomForestClassifier()
+              model = DecisionTreeClassifier()
               model.fit(x_train, y_train)
               y_pred = model.predict(x_test)
 
-              st.write('General accuracy: ', sum(y_pred == y_test) / len(y_test))
-              st.write('Accuracy on nominated films: ', sum((y_pred == y_test) & (y_test == 1))/sum(y_test==1))
-              st.write('Accuracy on not nominated films: ', sum((y_pred == y_test) & (y_test == 0))/sum(y_test==0))
+              with st.spinner(text='In progress'):
+                     time.sleep(2)
 
-              #mettere barra di caricamento?
+              st.subheader("Model's confusion matrix")
+              st.table(skm.confusion_matrix(y_test,y_pred))
+
               #grafici che fanno vedere che ne indovina tot, quanti dice che sono nominati...
-              #
+              
+              st.subheader("Some performance metrics")
+              st.write("Cohen's kappa: ", skm.cohen_kappa_score(y_test,y_pred))
+              st.write("F1 score: ", skm.f1_score(y_test,y_pred))
+              st.write("Precision score: ", skm.precision_score(y_test,y_pred))
+              st.write("Recall score: ", skm.recall_score(y_test,y_pred))
+
+              with st.expander('Learn more'):
+
+
 
        else:
               st.write('Choose the features to train the model on.')
