@@ -1,4 +1,5 @@
 from ctypes import alignment
+from importlib.metadata import metadata
 from tkinter import N
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -10,9 +11,10 @@ import time
 
 
 oscar_df = pd.read_csv('the_oscar_award.csv')
+metadata_df = pd.read_csv('movies_metadata.csv')
 model_df = pd.read_csv('model_df.csv')
 
-original_oscar_columns = list(oscar_df.columns)
+original_oscar = oscar_df
 
 oscar_df = oscar_df.drop(['year_ceremony','ceremony'], axis=1)
 oscar_df = oscar_df.dropna(subset=['film'])
@@ -30,8 +32,10 @@ if sec == 'Data cleaning':
        st.write("To develop this project I used data from two datasets:")
 
        with st.expander('The Oscar Award dataset'):
-              st.write('The dataset can be found on Kaggle at https://www.kaggle.com/unanimad/the-oscar-award. It contains information about the Awards and nominations given between the first ceremony of 1928 and 2020. Down here is the explanation of the content of the columns.')
-              columns_exp = [[original_oscar_columns[i],''] for i in range(7)]
+              st.write('The dataset can be found on Kaggle at https://www.kaggle.com/unanimad/the-oscar-award. You can download the raw data here.')
+              st.download_button('Download CSV', original_oscar.to_csv(index=False))
+              st.write('It contains information about the Awards and nominations given between the first ceremony of 1928 and 2020. Down here is the explanation of the content of the columns.')
+              columns_exp = [[list(original_oscar.columns)[i],''] for i in range(7)]
               columns_exp[0][1] = 'The year the film was released.'
               columns_exp[1][1] = 'The year of the ceremony the film was nominated for (usually the year after the release).' 
               columns_exp[2][1] = 'The number of the ceremony (for example the ceremony held in 2000 was the 72nd).' 
@@ -45,11 +49,51 @@ if sec == 'Data cleaning':
                       non-competing categories (for example honorary awards) and awards not tied to a specifical movie, which were only given in the\
                       first few Oscar ceremonies. Since the analysis was mainly focused on films, I decided to drop these datapoints.')
               st.write('This left us with a dataset of 5 columns and 10091 rows, which was used to develop the Academy award exploration section of the project.')
+              
 
        with st.expander('The Movies Metadata dataset'):
-              st.write('The dataset can be found on Kaggle at https://www.kaggle.com/rounakbanik/the-movies-dataset?select=movies_metadata.csv. It contains information about 45466 different movies.')
-              st.write('The original data ')
+              st.write('The dataset can be found on Kaggle at https://www.kaggle.com/rounakbanik/the-movies-dataset?select=movies_metadata.csv. You can download the raw data here.')
+              st.download_button('Download CSV', metadata_df.to_csv(index=False))
+              st.write('It contains information about 45466 different movies.')
+              st.write('The original dataset contained 24 columns, some of which useless for the scope of this project, which were dropped.')
+              st.markdown('''
+              
+                     Some of the columns contained data formatted with JSON: to unpack the information I used the "json.loads"\
+                      function and reformatted the data in the columns with lists.
+                      
+                      Seen that the information was going to be used to develop the predictive model, I wanted it to be numerical so I\
+                      created new columns for some of the most popular entries in the original JSON columns.
 
+                      - Genre: transformed into 20 new columns with boolean values ('Animation', 'Comedy', 'Family', 'Adventure', 'Fantasy', 'Romance', 'Drama', 'Action', 'Crime', 'Thriller', 'Horror', 'History', 'Science Fiction', 'Mystery', 'War', 'Foreign', 'Music', 'Documentary', 'Western', 'TV Movie').
+
+                      - Production company: transformed into 5 new columns (Warner Bros., Metro-Goldwyn-Mayer (MGM), Paramount Pictures, Twentieth Century Fox Film Corporation, Universal Pictures)      
+                             
+                      - Production country: transformed into 7 new columns (USA, UK, France, Germany, Italy, Canada, Japan)
+
+                      - Spoken Language: dropped to use the Original language column, which was transformed into 7 new columns (English, French, Italian, Japanese, German, Spanish, Russian)
+                             
+                             ''')
+
+              st.write('Other operations done to the values in the dataset to fill NA or inconsistent values are reported in the "data_exploration_and_cleaning.ipynb" file in the project directory. At the end of this section the dataset was made up of 48 columns and 43248 rows.')
+
+       st.markdown('''
+       
+       Eventually, to extract the information presented in the "Movie features analysis" section, the two datasets were merged together on the title of the film.
+       
+       To do this, the information in the Oscars dataset was grouped by film title and year (as different films with the same title were nominated in the history of the award), creating a column with the number of nominations and wins for each film.
+
+       Unfortunately, film titles are often not clear and the join between the two datasets presented many inconsistencies. To mitigate this effect, the columns that the join was based on were firstly normalized, eliminating punctuation, capitalization, accents, spaces and so on.
+
+       Still, after the join, only 2832 of the initial 4770 in the Oscars database were found.
+       
+       This is an example of the first 5 rows of the final dataset.
+
+       ''')
+
+       st.dataframe(model_df.head())
+
+       st.write('The final database  is downloadable here: ')
+       st. download_button('Download CSV', model_df.to_csv(index=False))
 
 if sec == 'Academy Award exploration':
        st.header('Academy Award exploration')
