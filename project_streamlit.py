@@ -362,17 +362,26 @@ if sec == 'Predictive model':
               st.write("Accuracy score: ", skm.accuracy_score(y_test,y_pred))
 
               with st.expander('Learn more'):
-                     st.markdown("The dataset we are basing this model on is unbalanced, in the sense that a lot more films don't get nominated \
-                             for Academy Awards then the ones that do (here exactly 40416 films are in class 0, meaning they haven't been nominated \
-                             and 2832 are in class 1, meaning they have): this means that the accuracy score is not an accurate representation \
-                            of the performance of the model. To study this we can look at the confusion matrix for the model, that allows\
-                            for a better visualization of what is happening. In a confusion matrix, each row represents the instances in an actual\
-                             class while each column represents the instances in a predicted class. Instead of accuracy it is more informative to\
-                             look at one of these metrics, that are of course intended for class 1: Precision: it's intuitively the\
-                             ability of the classifier not to label as positive a sample that is negative. It is a value that goes from 0 to 1.\
-                             Recall: it's intuitively the ability of the classifier to find all the positive samples. It is a value that goes from 0 to 1.\
-                            F1 score: as we can imagine, there exists some kind of tradeoff between precision and recall, the F1 score is an harmonic mean\
-                            between the two values that represents a more balanced metric.")
+                     st.markdown("""
+
+                     The dataset we are basing this model on is **unbalanced**, in the sense that a lot more films don't get nominated
+                     for Academy Awards then the ones that do (here exactly 40416 films are in class 0, meaning they haven't been nominated and 2832 are in class 1, meaning they have).
+                     
+                     This means that the accuracy score is not an accurate representation of the performance of the model. To study this we can look at the **confusion matrix** for the model, that allows for a better visualization of what is happening. 
+                     
+                     In a confusion matrix, each row represents the instances in an actual class while each column represents the instances in a predicted class. 
+                     
+                     Instead of accuracy it is more informative to look at one of these metrics, that are of course intended for class 1: 
+                     - Precision: it's intuitively the ability of the classifier not to label as positive a sample that is negative. It is a value that goes from 0 to 1.
+                     - Recall: it's intuitively the ability of the classifier to find all the positive samples. It is a value that goes from 0 to 1.
+                     - F1 score: as we can imagine, there exists some kind of tradeoff between precision and recall, the F1 score is an harmonic mean between the two values that represents a more balanced metric. 
+                     
+                     To find out more information about these tools:
+                     - https://en.wikipedia.org/wiki/Precision_and_recall#Recall
+                     - https://en.wikipedia.org/wiki/Confusion_matrix,
+                     - https://en.wikipedia.org/wiki/F-score
+
+                     """)
 
 
 
