@@ -10,8 +10,9 @@ import time
 
 
 oscar_df = pd.read_csv('the_oscar_award.csv')
-metadata_df = pd.read_csv('movies_metadata.csv')
 model_df = pd.read_csv('model_df.csv')
+
+original_oscar_columns = list(oscar_df.columns)
 
 oscar_df = oscar_df.drop(['year_ceremony','ceremony'], axis=1)
 oscar_df = oscar_df.dropna(subset=['film'])
@@ -21,13 +22,34 @@ corr_df = corr_df[corr_df.feat1 != corr_df.feat2]
 
 st.title('The Oscars analysis')
 
-sec = st.sidebar.radio('Sections:', ['Data cleaning', 'Academy Award exploration', 'Movie features analysis', 'Predictive model'])
+sec = st.sidebar.radio('Sections:', ['Homepage','Data cleaning', 'Academy Award exploration', 'Movie features analysis', 'Predictive model'])
 
 if sec == 'Data cleaning':
        st.header('Data cleaning')
 
-       #mettere spiegazione piuttosto discorsiva dei passaggi fatti, magari divisa in pulizia oscar, metadata e unione
-       #possibilità di scaricare i raw data e il dataset finale
+       st.write("To develop this project I used data from two datasets:")
+
+       with st.expander('The Oscar Award dataset'):
+              st.write('The dataset can be found on Kaggle at https://www.kaggle.com/unanimad/the-oscar-award. It contains information about the Awards and nominations given between the first ceremony of 1928 and 2020. Down here is the explanation of the content of the columns.')
+              columns_exp = [[original_oscar_columns[i],''] for i in range(7)]
+              columns_exp[0][1] = 'The year the film was released.'
+              columns_exp[1][1] = 'The year of the ceremony the film was nominated for (usually the year after the release).' 
+              columns_exp[2][1] = 'The number of the ceremony (for example the ceremony held in 2000 was the 72nd).' 
+              columns_exp[3][1] = 'The category the film was nominated for (for example Best Picture, Best Director, ...)' 
+              columns_exp[4][1] = 'The person, or multiple people, the award is given to. It the award is for acting, the award will be given to the actor (for example the Best Picture award is given to the producers of the film).' 
+              columns_exp[5][1] = 'The title of the film.' 
+              columns_exp[6][1] = 'A boolean value to indicate wheter the film has won the Award or not.' 
+              st.table(columns_exp)
+              st.write('The "year_ceremony" and "ceremony" columns were dropped because the data in the first three columns was redundant.')
+              st.write('The only 304 NA values in the dataset were in the "film" column: inspecting these datapoints I found out that they concerned\
+                      non-competing categories (for example honorary awards) and awards not tied to a specifical movie, which were only given in the\
+                      first few Oscar ceremonies. Since the analysis was mainly focused on films, I decided to drop these datapoints.')
+              st.write('This left us with a dataset of 5 columns and 10091 rows, which was used to develop the Academy award exploration section of the project.')
+
+       with st.expander('The Movies Metadata dataset'):
+              st.write('The dataset can be found on Kaggle at https://www.kaggle.com/rounakbanik/the-movies-dataset?select=movies_metadata.csv. It contains information about 45466 different movies.')
+              st.write('The original data ')
+
 
 if sec == 'Academy Award exploration':
        st.header('Academy Award exploration')
