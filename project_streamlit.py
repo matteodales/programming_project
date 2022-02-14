@@ -24,7 +24,7 @@ corr_df = corr_df[corr_df.feat1 != corr_df.feat2]
 
 st.title('The Oscars analysis')
 
-sec = st.sidebar.radio('Sections:', ['Homepage','Data cleaning', 'Academy Award exploration', 'Movie features analysis', 'Predictive model'])
+sec = st.sidebar.radio('Sections:', ['Data cleaning', 'Academy Award exploration', 'Movie features analysis', 'Predictive model'])
 
 if sec == 'Data cleaning':
        st.header('Data cleaning')
@@ -132,6 +132,7 @@ if sec == 'Academy Award exploration':
 
               nom_year = list(oscar_df[oscar_df.film == title_string]['year_film']+1)
               
+              sel_year=1928
 
               if len(set(nom_year))>1:
                      sel_year = st.selectbox('Choose a year:', [''] + list(set(nom_year)))
