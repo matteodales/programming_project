@@ -445,6 +445,25 @@ if sec == 'Predictive model':
               st.subheader("Model's confusion matrix")
               st.table(skm.confusion_matrix(y_test,y_pred)) #show the confusion matrix for the model
 
+              #get the normalized confusion matrix and divide the values in correctly and wrongly categorized
+
+              mat  = skm.confusion_matrix(y_test,y_pred, normalize='true')
+              correct_cat = [mat[0][0], mat[1][1]]
+              wrong_cat = [mat[0][1],mat[1][0]]
+
+              #show the results in a stacked bar chart
+
+              fig, ax = plt.subplots(figsize=(3,2))
+              ax.bar(['Not nominated','Nominated'], correct_cat, label='Correctly categorized', width=0.7)
+              ax.bar(['Not nominated','Nominated'], wrong_cat, bottom=correct_cat, label='Wrongly categorized',width=0.7)
+
+              ax.set_ylabel('%',fontsize=5)
+              ax.set_title('Normalized confusion matrix values',fontsize=5)
+              ax.tick_params(labelsize = 5)
+              ax.legend(loc='upper right', fontsize=5)
+              st.pyplot(fig)
+
+              st.write('The bar graph shows the values of the confusion matrix normalized by the true values. As we can see, the model is accurate on the not nominated films but not on the ones that are actually nominated.')
 
               st.subheader("Some performance metrics") #show different metrics
               st.write("F1 score: ", skm.f1_score(y_test,y_pred))
