@@ -1,5 +1,5 @@
 # programming_project
-Final project for the Programming 2021/2022 class
+Project for the Programming 2021/2022 class
 
 The scope of the project is the exploration of two datasets:
 - **Oscar Award dataset** (*the_oscar_award.csv*), about the Awards and nominations given between the first ceremony of 1928 and 2020.
