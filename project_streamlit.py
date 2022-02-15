@@ -1,6 +1,3 @@
-from ctypes import alignment
-from importlib.metadata import metadata
-from tkinter import N
 import pandas as pd
 import matplotlib.pyplot as plt
 import streamlit as st
@@ -9,18 +6,23 @@ from sklearn.tree import DecisionTreeClassifier
 import sklearn.metrics as skm
 import time
 
+#import the datasets
 
 oscar_df = pd.read_csv('the_oscar_award.csv')
 metadata_df = pd.read_csv('movies_metadata.csv')
 model_df = pd.read_csv('model_df.csv')
+
+#keep a copy of the original oscar dataset to be downloadable in the streamlit
 
 original_oscar = oscar_df
 
 oscar_df = oscar_df.drop(['year_ceremony','ceremony'], axis=1)
 oscar_df = oscar_df.dropna(subset=['film'])
 
+#already create the correlation list that will be used in the movie features section
+
 corr_df = model_df.corr().stack().rename_axis(('feat1', 'feat2')).reset_index(name='value')
-corr_df = corr_df[corr_df.feat1 != corr_df.feat2]
+corr_df = corr_df[corr_df.feat1 != corr_df.feat2] #eliminate self correlation
 
 st.title('The Oscars analysis')
 
@@ -35,6 +37,9 @@ if sec == 'Data cleaning':
               st.write('The dataset can be found on Kaggle at https://www.kaggle.com/unanimad/the-oscar-award. You can download the raw data here.')
               st.download_button('Download CSV', original_oscar.to_csv(index=False))
               st.write('It contains information about the Awards and nominations given between the first ceremony of 1928 and 2020. Down here is the explanation of the content of the columns.')
+
+              #create matrix to show the explanation for the columns
+
               columns_exp = [[list(original_oscar.columns)[i],''] for i in range(7)]
               columns_exp[0][1] = 'The year the film was released.'
               columns_exp[1][1] = 'The year of the ceremony the film was nominated for (usually the year after the release).' 
@@ -42,8 +47,10 @@ if sec == 'Data cleaning':
               columns_exp[3][1] = 'The category the film was nominated for (for example Best Picture, Best Director, ...)' 
               columns_exp[4][1] = 'The person, or multiple people, the award is given to. It the award is for acting, the award will be given to the actor (for example the Best Picture award is given to the producers of the film).' 
               columns_exp[5][1] = 'The title of the film.' 
-              columns_exp[6][1] = 'A boolean value to indicate wheter the film has won the Award or not.' 
+              columns_exp[6][1] = 'A boolean value to indicate wheter the film has won the Award or not.'
+
               st.table(columns_exp)
+
               st.write('The "year_ceremony" and "ceremony" columns were dropped because the data in the first three columns was redundant.')
               st.write('The only 304 NA values in the dataset were in the "film" column: inspecting these datapoints I found out that they concerned\
                       non-competing categories (for example honorary awards) and awards not tied to a specifical movie, which were only given in the\
@@ -56,7 +63,8 @@ if sec == 'Data cleaning':
               st.download_button('Download CSV', metadata_df.to_csv(index=False))
               st.write('It contains information about 45466 different movies.')
               st.write('The original dataset contained 24 columns, some of which useless for the scope of this project, which were dropped.')
-              st.markdown('''
+              #use markdown to be able to make lists and format the text
+              st.markdown(''' 
               
                      Some of the columns contained data formatted with JSON: to unpack the information I used the "json.loads"\
                       function and reformatted the data in the columns with lists.
@@ -100,9 +108,9 @@ if sec == 'Academy Award exploration':
 
        st.subheader('Exploration tool')
        st.write('Find out information about the Academy Awards history.')
-       sel_year = st.selectbox('Choose a year:', [''] + list(range(1928,2021)))
+       sel_year = st.selectbox('Choose a year:', [''] + list(range(1928,2021))) #add the '' possible value to not have a initial value when first run
        if sel_year != '':
-              list_cat = list(oscar_df[oscar_df.year_film == sel_year-1].category.unique())
+              list_cat = list(oscar_df[oscar_df.year_film == sel_year-1].category.unique()) #show list of possible categories for that year
               sel_cat = st.selectbox('Choose a category:', [''] + list_cat)
               if sel_cat != '':
                      st.dataframe(oscar_df[(oscar_df.year_film == sel_year-1) & (oscar_df.category == sel_cat)].drop(['year_film','category'],axis=1))
@@ -111,6 +119,9 @@ if sec == 'Academy Award exploration':
        name_string = st.text_input('Name: ')
        
        if name_string != '':
+
+              #save all the values (film,category,...) associated to that name in lists
+
               nom_film = list(oscar_df[oscar_df.name == name_string]['film'])
               nom_cat = list(oscar_df[oscar_df.name == name_string]['category'])
               nom_year = list(oscar_df[oscar_df.name == name_string]['year_film']+1)
@@ -132,10 +143,11 @@ if sec == 'Academy Award exploration':
 
               nom_year = list(oscar_df[oscar_df.film == title_string]['year_film']+1)
               
-              sel_year=1928
+              sel_year=1 #initialize it so that it's different that '' even if the movie is not in the dataset
 
               if len(set(nom_year))>1:
                      sel_year = st.selectbox('Choose a year:', [''] + list(set(nom_year)))
+                     #do this because different movies with the same title are nominated in different years
               if len(set(nom_year))==1:
                      sel_year = list(set(nom_year))[0]
 
@@ -162,7 +174,7 @@ if sec == 'Academy Award exploration':
        max_year = values[1]
 
        acting_categories_m = ['ACTOR IN A SUPPORTING ROLE','ACTOR','ACTOR IN A LEADING ROLE']
-       acting_categories_f = ['ACTRESS IN A SUPPORTING ROLE', 'ACTRESS','ACTRESS IN A LEADING ROLE']
+       acting_categories_f = ['ACTRESS IN A SUPPORTING ROLE', 'ACTRESS','ACTRESS IN A LEADING ROLE'] #separate the acting categories from the rest
        nominated_f = oscar_df[(oscar_df.category.isin(acting_categories_f)) & (oscar_df.year_film >= min_year-1) & (oscar_df.year_film <= max_year-1)]
        nominated_m = oscar_df[(oscar_df.category.isin(acting_categories_m)) & (oscar_df.year_film >= min_year-1) & (oscar_df.year_film <= max_year-1)]
 
@@ -172,20 +184,25 @@ if sec == 'Academy Award exploration':
        film_df = oscar_df
        film_df.drop(['category','name'],axis=1)
        film_df['nominations'] = 1
-       film_df['winner'] = film_df['winner'].apply(lambda x:int(x))
+       film_df['winner'] = film_df['winner'].apply(lambda x:int(x)) #the winner column is still a boolean and has to be changed
+
+       #we need to groupby the oscar_df for the different films, specifying also the year to distinguish films with the same title
+       #nominated in different years. To do this we create an identifier column that is than re-divided into the two initial columns.
+
        film_df['identifier'] = [str(film_df.year_film.iloc[i]) + film_df.film.iloc[i] for i in range(len(film_df.film))]
        film_df = film_df.groupby('identifier').sum()
        film_df['film'] = [film_df.index[i][4:] for i in range(len(film_df.year_film))]
        film_df['year_film'] = [int(film_df.index[i][0:4]) for i in range(len(film_df.year_film))]
-       film_df = film_df.set_index(pd.Series(range(len(film_df.film))))
+       film_df = film_df.set_index(pd.Series(range(len(film_df.film))))#reindex the new df
 
-       if nom_check:
+       if nom_check:#make all the plots for most nominations
               fig1, axs = plt.subplots(3, 1, figsize=(10,10))
 
-              most_nominated_f = nominated_f.groupby('name')['winner'].agg(['sum','count']).sort_values('count', ascending = False).head(5)
+              most_nominated_f = nominated_f.groupby('name')['winner'].agg(['sum','count']).sort_values('count', ascending = False).head(5)#we choose the 5 top
               p1 = axs[0].bar(most_nominated_f.index, most_nominated_f['count'], label='Nominations')
               axs[0].bar(most_nominated_f.index, most_nominated_f['sum'], color='red', label='Wins')
-              axs[0].bar_label(p1, label_type = 'center')
+              #show both the nominations and the wins
+              axs[0].bar_label(p1, label_type = 'center') # add the number of nominations on each bar
               axs[0].tick_params(labelsize = 9)
               axs[0].legend(loc='upper right', fontsize=9)
               axs[0].set_title('Most nominated female actress')
@@ -206,10 +223,10 @@ if sec == 'Academy Award exploration':
               axs[2].legend(loc='upper right', fontsize=9)
               axs[2].set_title('Most nominated film')
 
-              fig1.tight_layout(pad=2.0)
+              fig1.tight_layout(pad=2.0) #to separate them more
               st.pyplot(fig1)
        
-       if win_check:
+       if win_check:#same thing but only top winners
               fig2, axs = plt.subplots(3, 1, figsize=(10,10))
 
               most_winning_f = nominated_f.groupby('name')['winner'].agg(['sum','count']).sort_values('sum', ascending = False).head(5)
@@ -242,7 +259,7 @@ if sec == 'Academy Award exploration':
        num_categories = oscar_df.groupby(['year_film'])
        num_categories = num_categories.agg({"category": "nunique"})
 
-       sl_year = st.slider('Choose a year: ', 1928,2020, 1950)
+       sl_year = st.slider('Choose a year: ', 1928,2020, 1950) #to create an highlighted moving point that lets explore the data
 
        fig3, axs = plt.subplots(3, 1, figsize=(10,10))
        axs[0].plot(num_categories)
@@ -250,13 +267,13 @@ if sec == 'Academy Award exploration':
        axs[0].set_title('Number of different categories')
        st.write("In ", sl_year, " the number of different categories was ", num_categories.category.loc[sl_year-1])
 
-       num_nominees = oscar_df.groupby('year_film').count()
+       num_nominees = oscar_df.groupby('year_film').count()#count the occurrences in the original df
        axs[1].plot(num_nominees.index,num_nominees.category)
        axs[1].plot(sl_year-1, num_nominees.category.loc[sl_year-1],marker='o', markersize=10, color='red')
        axs[1].set_title('Total number of nominations')
        st.write("In ", sl_year, " the total number of nominations ", num_nominees.category.loc[sl_year-1])
 
-       win_prob = num_categories.category/num_nominees.category
+       win_prob = num_categories.category/num_nominees.category#the number of prizes given is equal to the number of categories for the year
        axs[2].plot(win_prob)
        axs[2].plot(sl_year-1, win_prob.loc[sl_year-1],marker='o', markersize=10, color='red')
        axs[2].set_title('Winning probability for a nominated film')
@@ -269,15 +286,17 @@ if sec == 'Movie features analysis':
 
        st.header('Movie features analysis')
 
+       #divided the data in not nominated, nominated at least once and won at least once
+
        not_df = model_df[model_df.nominated_at_least_once == 0]
-       nom_df = model_df[model_df.nominated_at_least_once == 1]
+       nom_df = model_df[(model_df.nominated_at_least_once == 1) & (model_df.won_at_least_once == 0)]
        win_df = model_df[model_df.won_at_least_once == 1]
 
        st.subheader('Comparison')
        st.write("Make a comparison between these features on not nominated, nominated and winning films.")
 
        confront = st.multiselect('Pick the features you want to compare', ['Budget', 'Revenue', 'Popularity', 'Runtime', 'Vote average', 'Vote count'])
-       confront = [item.lower() for item in confront]
+       confront = [item.lower() for item in confront] #to show the option written better to the user but still associate it to the columns in the df
 
        if 'vote average' in confront: 
               confront.append('vote_average')
@@ -286,27 +305,27 @@ if sec == 'Movie features analysis':
               confront.append('vote_count')
               confront.remove('vote count')
 
-       for feat in ['budget', 'revenue', 'popularity', 'runtime', 'vote_average', 'vote_count']:
-              if feat in confront:
-                     fig, axs = plt.subplots(1, 3, figsize=(8,4))
-                     axs[0].hist(not_df[not_df[feat] > 0][feat],50)
-                     axs[0].title.set_text('Not nominated')
-                     axs[1].hist(nom_df[nom_df[feat] > 0][feat],50)
-                     axs[1].set_title('Nominated')
-                     axs[2].hist(win_df[win_df[feat] > 0][feat],50)
-                     axs[2].set_title('Won')
+       for feat in confront:
+              fig, axs = plt.subplots(1, 3, figsize=(8,4))
+              axs[0].hist(not_df[not_df[feat] > 0][feat],50) #we ignore the cases in which these features are equal to 0
+              axs[0].title.set_text('Not nominated')
+              axs[1].hist(nom_df[nom_df[feat] > 0][feat],50)
+              axs[1].set_title('Nominated')
+              axs[2].hist(win_df[win_df[feat] > 0][feat],50)
+              axs[2].set_title('Won')
 
-                     fig.tight_layout(pad=1.0)
-                     fig.suptitle(feat, fontsize=15, ha='center', y = 1.05)
-                     st.pyplot(fig)
+              fig.tight_layout(pad=1.0)
+              fig.suptitle(feat, fontsize=15, ha='center', y = 1.05)
+              st.pyplot(fig)
 
-                     st.write('Average ', feat ,'for not nominated films is: ', not_df[not_df[feat] > 0][feat].mean())
-                     st.write('Average ', feat ,'for nominated films is: ', nom_df[nom_df[feat] > 0][feat].mean())
-                     st.write('Average ', feat ,'for winning films is: ', win_df[win_df[feat] > 0][feat].mean())
+              st.write('Average ', feat ,'for not nominated films is: ', not_df[not_df[feat] > 0][feat].mean())
+              st.write('Average ', feat ,'for nominated films is: ', nom_df[nom_df[feat] > 0][feat].mean())
+              st.write('Average ', feat ,'for winning films is: ', win_df[win_df[feat] > 0][feat].mean())
        
        st.subheader('Correlation')
        st.write("Find out the features mostly correlated with being nominated and winning an Academy Award.")
-
+       
+       #divide features in different classes
        select = st.selectbox('Select a feature', ['', 'Genre', 'Original Language','Producting Country', 'Producting Company','All Features'])
        
        if select != '':
@@ -334,6 +353,8 @@ if sec == 'Movie features analysis':
                                    'country_ca', 'country_ja', 'language_en', 'language_fr', 'language_it',\
                                    'language_ja', 'language_de', 'language_es', 'language_ru']
 
+              #we use the previously created list of correlations (each row is: feature1, feature2, correlation value)
+
               col1, col2 = st.columns(2)
               with col1:
                      st.write("Correlation with being nominated:")
@@ -344,13 +365,17 @@ if sec == 'Movie features analysis':
                      f_table_win = pd.concat([pd.Series(features), pd.Series(list(corr_df[(corr_df['feat1']=='won_at_least_once') & (corr_df['feat2'].apply(lambda x: x in features))].value))], axis=1, keys=['Feature','Correlation'])
                      st.dataframe(f_table_win)
 
-       with st.expander('Release date distribution'):
+       with st.expander('Release date distribution'): #expander for an added analysis
               st.write('The general consensus in the film industry is that the later in the year a film is published, the higher chances of awards it has: this has been\
                      attributed to the fact that awards season falls in the beginning of the successive year, and movies that have just been released leave a more vivid mark\
                      in the memories of awards voters.')
 
               fig, axs = plt.subplots(1, 3, figsize=(8,4))
-              axs[0].hist(model_df[(model_df.nominated_at_least_once == 0) & (model_df.day>1)]['day'],50)
+
+              #in the following graphs and analysis we ignore the value 1 for the day column because a disproportionate amount of movies have that as the release date
+              #this is probably because the first of january was put as the release date when the actual date wasn't clear.
+
+              axs[0].hist(model_df[(model_df.nominated_at_least_once == 0) & (model_df.day>1)]['day'],50) 
               axs[0].title.set_text('Not nominated')
               axs[1].hist(model_df[(model_df.nominated_at_least_once == 1) & (model_df.day>1)]['day'],50)
               axs[1].set_title('Nominated')
@@ -365,9 +390,10 @@ if sec == 'Movie features analysis':
               st.write('Average ', 'day' ,'for nominated films is: ', model_df[(model_df.nominated_at_least_once == 1) & (model_df.day>1)]['day'].mean())
               st.write('Average ', 'day' ,'for winning films is: ', model_df[(model_df.won_at_least_once == 1) & (model_df.day>1)]['day'].mean())
 
+              #creates a list of values that represents the rate of nominated movies out of all movies released a certain day of each year
               day_rate = [len(model_df[(model_df.nominated_at_least_once == 1) & (model_df.day==x)]['day'])/len(model_df[model_df.day==x]['day']) for x in range(2,365)]
               fig, ax = plt.subplots(figsize=(8,2))
-              ax.contourf([day_rate,day_rate],cmap='jet',vmin=0, vmax=max(day_rate))
+              ax.contourf([day_rate,day_rate],cmap='jet',vmin=0, vmax=max(day_rate)) #creates a 1d heatmap to show the values visually
               st.pyplot(fig)
 
               st.write('The heatmap shows how the rate of nominated films released in a day varies\
@@ -379,6 +405,7 @@ if sec == 'Predictive model':
        st.write('Using this tool you can run a Decision Tree Classifier on a chosen list of\
                features to determine wheter a film has received at least a nomination or not.')
 
+       #use checkboxes to decide the features
        runtime = st.checkbox('Runtime')
        popularity = st.checkbox('Popularity')
        budget = st.checkbox('Budget')
@@ -404,27 +431,28 @@ if sec == 'Predictive model':
               x_oscar = model_df[features]
               y_oscar = model_df['nominated_at_least_once']
 
+              #divide the df into train and test datapoints
               x_train, x_test, y_train, y_test = train_test_split(x_oscar, y_oscar, test_size=0.1, random_state=10)
 
               model = DecisionTreeClassifier()
               model.fit(x_train, y_train)
               y_pred = model.predict(x_test)
 
-              with st.spinner(text='In progress'):
+              with st.spinner(text='In progress'): #show the spinner for 2 seconds
                      time.sleep(2)
 
-              st.subheader("Model's confusion matrix")
-              st.table(skm.confusion_matrix(y_test,y_pred))
-
-              #grafici che fanno vedere che ne indovina tot, quanti dice che sono nominati...
               
-              st.subheader("Some performance metrics")
+              st.subheader("Model's confusion matrix")
+              st.table(skm.confusion_matrix(y_test,y_pred)) #show the confusion matrix for the model
+
+
+              st.subheader("Some performance metrics") #show different metrics
               st.write("F1 score: ", skm.f1_score(y_test,y_pred))
               st.write("Precision score: ", skm.precision_score(y_test,y_pred))
               st.write("Recall score: ", skm.recall_score(y_test,y_pred))
               st.write("Accuracy score: ", skm.accuracy_score(y_test,y_pred))
 
-              with st.expander('Learn more'):
+              with st.expander('Learn more'):#explain the results shown
                      st.markdown("""
 
                      The dataset we are basing this model on is **unbalanced**, in the sense that a lot more films don't get nominated
